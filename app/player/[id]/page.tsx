@@ -2,20 +2,18 @@
 
 import { use, useRef, useEffect, useState } from "react"
 import Link from "next/link"
-import { Eye, Loader2, AlertTriangle, Swords, Shield, Heart, Brain, BookOpen, Sparkles, Coins, Package, ScrollText, Trash2, Store, Zap, Minus, Plus, ShieldHalf, Footprints } from "lucide-react"
+import { Eye, Loader2, AlertTriangle, Swords, Shield, Heart, Brain, BookOpen, Sparkles, Coins, Package, ScrollText, Trash2, Store, Zap } from "lucide-react"
 import { usePlayerRealtime } from "@/hooks/use-player-realtime"
 import { HpBar } from "@/components/hp-bar"
 import { AbilitiesPanel } from "@/components/abilities-panel"
 import type { LogEntry } from "@/lib/types"
 
-function StatBlock({ label, value, icon, color, glowClass, onIncrement, onDecrement }: {
+function StatBlock({ label, value, icon, color, glowClass }: {
   label: string
   value: number
   icon: React.ReactNode
   color: string
   glowClass: string
-  onIncrement?: () => void
-  onDecrement?: () => void
 }) {
   const percent = Math.min((value / 100) * 100, 100)
   return (
@@ -23,27 +21,7 @@ function StatBlock({ label, value, icon, color, glowClass, onIncrement, onDecrem
       <div className="flex items-center gap-2 mb-2">
         <div className={color}>{icon}</div>
         <span className={`text-xs font-bold uppercase tracking-widest ${color} ${glowClass}`}>{label}</span>
-        <div className="ml-auto flex items-center gap-1.5">
-          {onDecrement && (
-            <button
-              onClick={onDecrement}
-              disabled={value <= 0}
-              className="h-6 w-6 rounded-md flex items-center justify-center bg-secondary/80 hover:bg-neon-red/20 hover:text-neon-red text-muted-foreground transition-colors cursor-pointer disabled:opacity-30 disabled:cursor-not-allowed"
-            >
-              <Minus className="h-3 w-3" />
-            </button>
-          )}
-          <span className={`text-lg font-sans font-bold tabular-nums min-w-[28px] text-center ${color} ${glowClass}`}>{value}</span>
-          {onIncrement && (
-            <button
-              onClick={onIncrement}
-              disabled={value >= 100}
-              className="h-6 w-6 rounded-md flex items-center justify-center bg-secondary/80 hover:bg-neon-cyan/20 hover:text-neon-cyan text-muted-foreground transition-colors cursor-pointer disabled:opacity-30 disabled:cursor-not-allowed"
-            >
-              <Plus className="h-3 w-3" />
-            </button>
-          )}
-        </div>
+        <span className={`ml-auto text-lg font-sans font-bold tabular-nums ${color} ${glowClass}`}>{value}</span>
       </div>
       <div className="h-2 rounded-full bg-secondary overflow-hidden">
         <div
@@ -141,7 +119,7 @@ function PlayerLog({ logs, onClearLogs }: { logs: LogEntry[]; onClearLogs?: () =
 export default function PlayerPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params)
   const playerId = parseInt(id, 10)
-  const { player, logs, loading, notFound, updateHp, updateStat, updateAbilities, updateInventory, clearLocalLogs } = usePlayerRealtime(playerId)
+  const { player, logs, loading, notFound, updateHp, updateAbilities, updateInventory, clearLocalLogs } = usePlayerRealtime(playerId)
   const [activeTab, setActiveTab] = useState<"stats" | "abilities">("stats")
 
   if (loading) {
@@ -296,8 +274,6 @@ export default function PlayerPage({ params }: { params: Promise<{ id: string }>
                     icon={<Swords className="h-4 w-4" />}
                     color="text-neon-red"
                     glowClass="text-glow-red"
-                    onIncrement={() => updateStat("strength", player.stats.strength + 1)}
-                    onDecrement={() => updateStat("strength", player.stats.strength - 1)}
                   />
                   <StatBlock
                     label="Destreza"
@@ -305,8 +281,6 @@ export default function PlayerPage({ params }: { params: Promise<{ id: string }>
                     icon={<Shield className="h-4 w-4" />}
                     color="text-neon-cyan"
                     glowClass="text-glow-cyan"
-                    onIncrement={() => updateStat("dexterity", player.stats.dexterity + 1)}
-                    onDecrement={() => updateStat("dexterity", player.stats.dexterity - 1)}
                   />
                   <StatBlock
                     label="Constituicao"
@@ -314,8 +288,6 @@ export default function PlayerPage({ params }: { params: Promise<{ id: string }>
                     icon={<Heart className="h-4 w-4" />}
                     color="text-emerald-400"
                     glowClass=""
-                    onIncrement={() => updateStat("constitution", player.stats.constitution + 1)}
-                    onDecrement={() => updateStat("constitution", player.stats.constitution - 1)}
                   />
                   <StatBlock
                     label="Inteligencia"
@@ -323,8 +295,6 @@ export default function PlayerPage({ params }: { params: Promise<{ id: string }>
                     icon={<Brain className="h-4 w-4" />}
                     color="text-neon-gold"
                     glowClass="text-glow-gold"
-                    onIncrement={() => updateStat("intelligence", player.stats.intelligence + 1)}
-                    onDecrement={() => updateStat("intelligence", player.stats.intelligence - 1)}
                   />
                   <StatBlock
                     label="Sabedoria"
@@ -332,8 +302,6 @@ export default function PlayerPage({ params }: { params: Promise<{ id: string }>
                     icon={<BookOpen className="h-4 w-4" />}
                     color="text-amber-400"
                     glowClass=""
-                    onIncrement={() => updateStat("wisdom", player.stats.wisdom + 1)}
-                    onDecrement={() => updateStat("wisdom", player.stats.wisdom - 1)}
                   />
                   <StatBlock
                     label="Carisma"
@@ -341,75 +309,7 @@ export default function PlayerPage({ params }: { params: Promise<{ id: string }>
                     icon={<Sparkles className="h-4 w-4" />}
                     color="text-fuchsia-400"
                     glowClass=""
-                    onIncrement={() => updateStat("charisma", player.stats.charisma + 1)}
-                    onDecrement={() => updateStat("charisma", player.stats.charisma - 1)}
                   />
-                </div>
-
-                {/* CA & Deslocamento */}
-                <div className="flex items-center gap-2 mt-4 mb-3">
-                  <div className="h-1 flex-1 bg-gradient-to-r from-neon-cyan/40 to-transparent rounded-full" />
-                  <h2 className="font-sans text-xs font-bold tracking-[0.25em] uppercase text-neon-cyan text-glow-cyan shrink-0">
-                    Defesa & Movimento
-                  </h2>
-                  <div className="h-1 flex-1 bg-gradient-to-l from-neon-cyan/40 to-transparent rounded-full" />
-                </div>
-                <div className="grid grid-cols-2 gap-3">
-                  {/* Classe de Armadura */}
-                  <div className="glass-panel rounded-xl p-4 flex flex-col items-center gap-2">
-                    <div className="flex items-center gap-1.5">
-                      <ShieldHalf className="h-4 w-4 text-sky-400" />
-                      <span className="text-[10px] font-bold uppercase tracking-widest text-sky-400">CA</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <button
-                        onClick={() => updateStat("armor_class", player.armorClass - 1)}
-                        disabled={player.armorClass <= 0}
-                        className="h-7 w-7 rounded-md flex items-center justify-center bg-secondary/80 hover:bg-neon-red/20 hover:text-neon-red text-muted-foreground transition-colors cursor-pointer disabled:opacity-30 disabled:cursor-not-allowed"
-                      >
-                        <Minus className="h-3 w-3" />
-                      </button>
-                      <span className="text-2xl font-sans font-bold tabular-nums text-sky-400 min-w-[40px] text-center">
-                        {player.armorClass}
-                      </span>
-                      <button
-                        onClick={() => updateStat("armor_class", player.armorClass + 1)}
-                        disabled={player.armorClass >= 99}
-                        className="h-7 w-7 rounded-md flex items-center justify-center bg-secondary/80 hover:bg-neon-cyan/20 hover:text-neon-cyan text-muted-foreground transition-colors cursor-pointer disabled:opacity-30 disabled:cursor-not-allowed"
-                      >
-                        <Plus className="h-3 w-3" />
-                      </button>
-                    </div>
-                    <span className="text-[9px] text-muted-foreground uppercase tracking-wider">Classe de Armadura</span>
-                  </div>
-
-                  {/* Deslocamento */}
-                  <div className="glass-panel rounded-xl p-4 flex flex-col items-center gap-2">
-                    <div className="flex items-center gap-1.5">
-                      <Footprints className="h-4 w-4 text-emerald-400" />
-                      <span className="text-[10px] font-bold uppercase tracking-widest text-emerald-400">Desloc.</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <button
-                        onClick={() => updateStat("movement_speed", player.movementSpeed - 5)}
-                        disabled={player.movementSpeed <= 0}
-                        className="h-7 w-7 rounded-md flex items-center justify-center bg-secondary/80 hover:bg-neon-red/20 hover:text-neon-red text-muted-foreground transition-colors cursor-pointer disabled:opacity-30 disabled:cursor-not-allowed"
-                      >
-                        <Minus className="h-3 w-3" />
-                      </button>
-                      <span className="text-2xl font-sans font-bold tabular-nums text-emerald-400 min-w-[40px] text-center">
-                        {player.movementSpeed}
-                      </span>
-                      <button
-                        onClick={() => updateStat("movement_speed", player.movementSpeed + 5)}
-                        disabled={player.movementSpeed >= 100}
-                        className="h-7 w-7 rounded-md flex items-center justify-center bg-secondary/80 hover:bg-neon-cyan/20 hover:text-neon-cyan text-muted-foreground transition-colors cursor-pointer disabled:opacity-30 disabled:cursor-not-allowed"
-                      >
-                        <Plus className="h-3 w-3" />
-                      </button>
-                    </div>
-                    <span className="text-[9px] text-muted-foreground uppercase tracking-wider">{"Deslocamento (ft)"}</span>
-                  </div>
                 </div>
               </div>
             )}

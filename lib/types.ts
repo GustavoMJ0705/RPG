@@ -47,8 +47,6 @@ export interface DbPlayer {
   intelligence: number
   wisdom: number
   charisma: number
-  armor_class: number
-  movement_speed: number
   inventory: InventoryItem[]
   abilities: Ability[]
   created_at: string
@@ -111,8 +109,6 @@ export interface PlayerData {
     wisdom: number
     charisma: number
   }
-  armorClass: number
-  movementSpeed: number
   inventory: InventoryItem[]
   abilities: Ability[]
   coinFlash: boolean
@@ -141,8 +137,6 @@ export function dbPlayerToPlayerData(p: DbPlayer): PlayerData {
       wisdom: p.wisdom,
       charisma: p.charisma,
     },
-    armorClass: p.armor_class ?? 10,
-    movementSpeed: p.movement_speed ?? 30,
     inventory: (p.inventory ?? []) as InventoryItem[],
     abilities: (p.abilities ?? []) as Ability[],
     coinFlash: false,
