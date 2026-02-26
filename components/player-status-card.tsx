@@ -2,7 +2,7 @@
 
 import { useState } from "react"
 import Link from "next/link"
-import { Swords, Shield, Heart, Brain, BookOpen, Sparkles, Package, X, Coins, Minus, Plus, Zap } from "lucide-react"
+import { Swords, Shield, Heart, Brain, BookOpen, Sparkles, Package, X, Coins, Minus, Plus, Zap, ShieldHalf, Footprints } from "lucide-react"
 import { HpBar } from "@/components/hp-bar"
 import { AbilitiesPanel } from "@/components/abilities-panel"
 import type { PlayerData, InventoryItem, Ability } from "@/lib/types"
@@ -138,6 +138,20 @@ export function PlayerStatusCard({ player, onUpdateStat, onUpdateHp, onUpdateAbi
                 </span>
               )}
             </Link>
+          </div>
+        </div>
+
+        {/* CA + Speed row */}
+        <div className="flex items-center gap-2 mb-2">
+          <div className="flex-1 flex items-center gap-1.5 px-2 py-1.5 rounded-md bg-neon-cyan/5 border border-neon-cyan/20">
+            <ShieldHalf className="h-3 w-3 text-neon-cyan" />
+            <span className="text-[9px] text-muted-foreground uppercase">CA</span>
+            <span className="text-[11px] font-bold tabular-nums text-neon-cyan ml-auto">{player.armorClass}</span>
+          </div>
+          <div className="flex-1 flex items-center gap-1.5 px-2 py-1.5 rounded-md bg-neon-gold/5 border border-neon-gold/20">
+            <Footprints className="h-3 w-3 text-neon-gold" />
+            <span className="text-[9px] text-muted-foreground uppercase">Desloc.</span>
+            <span className="text-[11px] font-bold tabular-nums text-neon-gold ml-auto">{player.speed}m</span>
           </div>
         </div>
 

@@ -2,7 +2,7 @@
 
 import { use, useRef, useEffect, useState } from "react"
 import Link from "next/link"
-import { Eye, Loader2, AlertTriangle, Swords, Shield, Heart, Brain, BookOpen, Sparkles, Coins, Package, ScrollText, Trash2, Store, Zap } from "lucide-react"
+import { Eye, Loader2, AlertTriangle, Swords, Shield, Heart, Brain, BookOpen, Sparkles, Coins, Package, ScrollText, Trash2, Store, Zap, ShieldHalf, Footprints } from "lucide-react"
 import { usePlayerRealtime } from "@/hooks/use-player-realtime"
 import { HpBar } from "@/components/hp-bar"
 import { AbilitiesPanel } from "@/components/abilities-panel"
@@ -36,6 +36,88 @@ function StatBlock({ label, value, icon, color, glowClass }: {
           style={{ width: `${percent}%` }}
         />
       </div>
+    </div>
+  )
+}
+
+function CombatPanel({ armorClass, speed, onSave }: {
+  armorClass: number
+  speed: number
+  onSave: (armorClass: number, speed: number) => void
+}) {
+  const [editAC, setEditAC] = useState(String(armorClass))
+  const [editSpeed, setEditSpeed] = useState(String(speed))
+  const [saved, setSaved] = useState(false)
+
+  const hasChanges = Number(editAC) !== armorClass || Number(editSpeed) !== speed
+
+  const handleSave = () => {
+    onSave(Math.max(0, parseInt(editAC) || 0), Math.max(0, parseFloat(editSpeed) || 0))
+    setSaved(true)
+    setTimeout(() => setSaved(false), 1500)
+  }
+
+  return (
+    <div>
+      <div className="flex items-center gap-2 mb-3">
+        <div className="h-1 flex-1 bg-gradient-to-r from-neon-red/40 to-transparent rounded-full" />
+        <h2 className="font-sans text-xs font-bold tracking-[0.25em] uppercase text-neon-red text-glow-red shrink-0">
+          Combate
+        </h2>
+        <div className="h-1 flex-1 bg-gradient-to-l from-neon-red/40 to-transparent rounded-full" />
+      </div>
+
+      <div className="grid grid-cols-2 gap-3">
+        {/* Armor Class */}
+        <div className="glass-panel rounded-xl p-4 flex flex-col items-center gap-3">
+          <div className="flex items-center gap-2">
+            <ShieldHalf className="h-5 w-5 text-neon-cyan" />
+            <span className="text-[10px] font-bold uppercase tracking-widest text-neon-cyan text-glow-cyan">CA</span>
+          </div>
+          <input
+            type="number"
+            value={editAC}
+            onChange={(e) => setEditAC(e.target.value)}
+            min="0"
+            className="w-20 text-center bg-background/60 border border-glass-border rounded-lg px-2 py-2 text-2xl font-sans font-bold text-neon-cyan tabular-nums focus:outline-none focus:border-neon-cyan/50 text-glow-cyan"
+          />
+          <span className="text-[9px] text-muted-foreground uppercase tracking-wider">Classe de Armadura</span>
+        </div>
+
+        {/* Speed */}
+        <div className="glass-panel rounded-xl p-4 flex flex-col items-center gap-3">
+          <div className="flex items-center gap-2">
+            <Footprints className="h-5 w-5 text-neon-gold" />
+            <span className="text-[10px] font-bold uppercase tracking-widest text-neon-gold text-glow-gold">Desloc.</span>
+          </div>
+          <div className="flex items-center gap-1">
+            <input
+              type="number"
+              value={editSpeed}
+              onChange={(e) => setEditSpeed(e.target.value)}
+              min="0"
+              step="1.5"
+              className="w-20 text-center bg-background/60 border border-glass-border rounded-lg px-2 py-2 text-2xl font-sans font-bold text-neon-gold tabular-nums focus:outline-none focus:border-neon-gold/50 text-glow-gold"
+            />
+          </div>
+          <span className="text-[9px] text-muted-foreground uppercase tracking-wider">Deslocamento (m)</span>
+        </div>
+      </div>
+
+      {/* Save Button */}
+      <button
+        onClick={handleSave}
+        disabled={!hasChanges && !saved}
+        className={`w-full mt-3 py-2.5 rounded-lg text-[10px] font-bold uppercase tracking-widest transition-all cursor-pointer ${
+          saved
+            ? "bg-emerald-500/15 border border-emerald-500/30 text-emerald-400"
+            : hasChanges
+            ? "bg-neon-red/15 border border-neon-red/30 text-neon-red hover:bg-neon-red/25"
+            : "bg-muted/20 border border-glass-border text-muted-foreground/50 cursor-not-allowed"
+        }`}
+      >
+        {saved ? "Salvo!" : "Salvar Alteracoes"}
+      </button>
     </div>
   )
 }
@@ -119,8 +201,8 @@ function PlayerLog({ logs, onClearLogs }: { logs: LogEntry[]; onClearLogs?: () =
 export default function PlayerPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params)
   const playerId = parseInt(id, 10)
-  const { player, logs, loading, notFound, updateHp, updateAbilities, updateInventory, clearLocalLogs } = usePlayerRealtime(playerId)
-  const [activeTab, setActiveTab] = useState<"stats" | "abilities">("stats")
+  const { player, logs, loading, notFound, updateHp, updateAbilities, updateInventory, updateCombatStats, clearLocalLogs } = usePlayerRealtime(playerId)
+  const [activeTab, setActiveTab] = useState<"stats" | "combat" | "abilities">("stats")
 
   if (loading) {
     return (
@@ -240,6 +322,17 @@ export default function PlayerPage({ params }: { params: Promise<{ id: string }>
                 Atributos
               </button>
               <button
+                onClick={() => setActiveTab("combat")}
+                className={`flex-1 flex items-center justify-center gap-1.5 px-3 py-2 rounded-md text-[10px] font-bold uppercase tracking-wider transition-all cursor-pointer ${
+                  activeTab === "combat"
+                    ? "bg-neon-red/15 text-neon-red border border-neon-red/30 text-glow-red"
+                    : "text-muted-foreground hover:text-foreground hover:bg-secondary/50 border border-transparent"
+                }`}
+              >
+                <ShieldHalf className="h-3 w-3" />
+                Combate
+              </button>
+              <button
                 onClick={() => setActiveTab("abilities")}
                 className={`flex-1 flex items-center justify-center gap-1.5 px-3 py-2 rounded-md text-[10px] font-bold uppercase tracking-wider transition-all cursor-pointer ${
                   activeTab === "abilities"
@@ -312,6 +405,14 @@ export default function PlayerPage({ params }: { params: Promise<{ id: string }>
                   />
                 </div>
               </div>
+            )}
+
+            {activeTab === "combat" && (
+              <CombatPanel
+                armorClass={player.armorClass}
+                speed={player.speed}
+                onSave={(ac, spd) => updateCombatStats(ac, spd)}
+              />
             )}
 
             {activeTab === "abilities" && (
