@@ -176,6 +176,11 @@ export function getDefaultSkills(): Skill[] {
 }
 
 export function dbPlayerToPlayerData(p: DbPlayer): PlayerData {
+  // Se skills está vazio ou não existe, usa as skills padrão
+  const skills = (p.skills && Array.isArray(p.skills) && p.skills.length > 0) 
+    ? p.skills as Skill[]
+    : getDefaultSkills()
+
   return {
     id: p.id,
     name: p.name,
@@ -194,7 +199,7 @@ export function dbPlayerToPlayerData(p: DbPlayer): PlayerData {
     },
     inventory: (p.inventory ?? []) as InventoryItem[],
     abilities: (p.abilities ?? []) as Ability[],
-    skills: (p.skills ?? getDefaultSkills()) as Skill[],
+    skills,
     coinFlash: false,
   }
 }
