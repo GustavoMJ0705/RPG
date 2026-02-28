@@ -41,14 +41,37 @@ function StatBlock({ label, value, icon, color, glowClass }: {
   )
 }
 
-function CombatPanel({ armorClass, speed, onSave }: {
+function CombatPanel({ armorClass, speed, stats, playerLevel = 1, onSave, onSaveResistances }: {
   armorClass: number
   speed: number
+  stats: { constitution: number; dexterity: number; wisdom: number }
+  playerLevel?: number
   onSave: (armorClass: number, speed: number) => void
+  onSaveResistances: (fortMisc: number, refMisc: number, vonMisc: number) => void
 }) {
   const [editAC, setEditAC] = useState(String(armorClass))
   const [editSpeed, setEditSpeed] = useState(String(speed))
   const [saved, setSaved] = useState(false)
+
+  // Resistências - bônus diversos editáveis
+  const [fortMisc, setFortMisc] = useState(0)
+  const [refMisc, setRefMisc] = useState(0)
+  const [vonMisc, setVonMisc] = useState(0)
+  const [resSaved, setResSaved] = useState(false)
+
+  // Cálculo de modificador
+  const getModifier = (stat: number) => Math.floor((stat - 10) / 2)
+  const halfLevel = Math.floor(playerLevel / 2)
+
+  // Modificadores de atributo
+  const conMod = getModifier(stats.constitution)
+  const desMod = getModifier(stats.dexterity)
+  const sabMod = getModifier(stats.wisdom)
+
+  // Totais
+  const fortTotal = halfLevel + conMod + fortMisc
+  const refTotal = halfLevel + desMod + refMisc
+  const vonTotal = halfLevel + sabMod + vonMisc
 
   const hasChanges = Number(editAC) !== armorClass || Number(editSpeed) !== speed
 
@@ -59,7 +82,7 @@ function CombatPanel({ armorClass, speed, onSave }: {
   }
 
   return (
-    <div>
+    <div className="space-y-4">
       <div className="flex items-center gap-2 mb-3">
         <div className="h-1 flex-1 bg-gradient-to-r from-neon-red/40 to-transparent rounded-full" />
         <h2 className="font-sans text-xs font-bold tracking-[0.25em] uppercase text-neon-red text-glow-red shrink-0">
@@ -109,7 +132,7 @@ function CombatPanel({ armorClass, speed, onSave }: {
       <button
         onClick={handleSave}
         disabled={!hasChanges && !saved}
-        className={`w-full mt-3 py-2.5 rounded-lg text-[10px] font-bold uppercase tracking-widest transition-all cursor-pointer ${
+        className={`w-full py-2.5 rounded-lg text-[10px] font-bold uppercase tracking-widest transition-all cursor-pointer ${
           saved
             ? "bg-emerald-500/15 border border-emerald-500/30 text-emerald-400"
             : hasChanges
@@ -119,6 +142,95 @@ function CombatPanel({ armorClass, speed, onSave }: {
       >
         {saved ? "Salvo!" : "Salvar Alteracoes"}
       </button>
+
+      {/* Resistências */}
+      <div className="flex items-center gap-2 mt-4 mb-3">
+        <div className="h-1 flex-1 bg-gradient-to-r from-sky-400/40 to-transparent rounded-full" />
+        <h2 className="font-sans text-xs font-bold tracking-[0.25em] uppercase text-sky-400 shrink-0">
+          Resistencias
+        </h2>
+        <div className="h-1 flex-1 bg-gradient-to-l from-sky-400/40 to-transparent rounded-full" />
+      </div>
+
+      <div className="glass-panel rounded-xl p-3">
+        {/* Header */}
+        <div className="grid grid-cols-[80px_50px_40px_50px_50px] gap-1 mb-2 text-center">
+          <div className="text-[8px] font-bold uppercase tracking-wider text-muted-foreground"></div>
+          <div className="text-[8px] font-bold uppercase tracking-wider text-sky-400">Total</div>
+          <div className="text-[8px] font-bold uppercase tracking-wider text-muted-foreground">1/2 Nv</div>
+          <div className="text-[8px] font-bold uppercase tracking-wider text-muted-foreground">Mod.</div>
+          <div className="text-[8px] font-bold uppercase tracking-wider text-muted-foreground">Outros</div>
+        </div>
+
+        {/* FORT - Fortitude */}
+        <div className="grid grid-cols-[80px_50px_40px_50px_50px] gap-1 items-center mb-2">
+          <div className="flex flex-col">
+            <span className="text-xs font-bold text-sky-400">FORT</span>
+            <span className="text-[8px] text-muted-foreground">Fortitude</span>
+          </div>
+          <div className="flex items-center justify-center h-8 rounded bg-sky-500/20 border border-sky-500/30">
+            <span className="text-sm font-bold text-sky-400 tabular-nums">{fortTotal >= 0 ? `+${fortTotal}` : fortTotal}</span>
+          </div>
+          <div className="flex items-center justify-center h-8 rounded bg-background/40 border border-glass-border">
+            <span className="text-xs text-muted-foreground tabular-nums">{halfLevel}</span>
+          </div>
+          <div className="flex items-center justify-center h-8 rounded bg-background/40 border border-glass-border">
+            <span className="text-xs text-emerald-400 tabular-nums">{conMod >= 0 ? `+${conMod}` : conMod}</span>
+          </div>
+          <input
+            type="number"
+            value={fortMisc}
+            onChange={(e) => setFortMisc(parseInt(e.target.value) || 0)}
+            className="h-8 w-full text-center bg-background/60 border border-glass-border rounded text-xs tabular-nums focus:outline-none focus:border-sky-400/50 text-foreground"
+          />
+        </div>
+
+        {/* REF - Reflexo */}
+        <div className="grid grid-cols-[80px_50px_40px_50px_50px] gap-1 items-center mb-2">
+          <div className="flex flex-col">
+            <span className="text-xs font-bold text-sky-400">REF</span>
+            <span className="text-[8px] text-muted-foreground">Reflexo</span>
+          </div>
+          <div className="flex items-center justify-center h-8 rounded bg-sky-500/20 border border-sky-500/30">
+            <span className="text-sm font-bold text-sky-400 tabular-nums">{refTotal >= 0 ? `+${refTotal}` : refTotal}</span>
+          </div>
+          <div className="flex items-center justify-center h-8 rounded bg-background/40 border border-glass-border">
+            <span className="text-xs text-muted-foreground tabular-nums">{halfLevel}</span>
+          </div>
+          <div className="flex items-center justify-center h-8 rounded bg-background/40 border border-glass-border">
+            <span className="text-xs text-neon-cyan tabular-nums">{desMod >= 0 ? `+${desMod}` : desMod}</span>
+          </div>
+          <input
+            type="number"
+            value={refMisc}
+            onChange={(e) => setRefMisc(parseInt(e.target.value) || 0)}
+            className="h-8 w-full text-center bg-background/60 border border-glass-border rounded text-xs tabular-nums focus:outline-none focus:border-sky-400/50 text-foreground"
+          />
+        </div>
+
+        {/* VON - Vontade */}
+        <div className="grid grid-cols-[80px_50px_40px_50px_50px] gap-1 items-center">
+          <div className="flex flex-col">
+            <span className="text-xs font-bold text-sky-400">VON</span>
+            <span className="text-[8px] text-muted-foreground">Vontade</span>
+          </div>
+          <div className="flex items-center justify-center h-8 rounded bg-sky-500/20 border border-sky-500/30">
+            <span className="text-sm font-bold text-sky-400 tabular-nums">{vonTotal >= 0 ? `+${vonTotal}` : vonTotal}</span>
+          </div>
+          <div className="flex items-center justify-center h-8 rounded bg-background/40 border border-glass-border">
+            <span className="text-xs text-muted-foreground tabular-nums">{halfLevel}</span>
+          </div>
+          <div className="flex items-center justify-center h-8 rounded bg-background/40 border border-glass-border">
+            <span className="text-xs text-amber-400 tabular-nums">{sabMod >= 0 ? `+${sabMod}` : sabMod}</span>
+          </div>
+          <input
+            type="number"
+            value={vonMisc}
+            onChange={(e) => setVonMisc(parseInt(e.target.value) || 0)}
+            className="h-8 w-full text-center bg-background/60 border border-glass-border rounded text-xs tabular-nums focus:outline-none focus:border-sky-400/50 text-foreground"
+          />
+        </div>
+      </div>
     </div>
   )
 }
@@ -408,12 +520,19 @@ export default function PlayerPage({ params }: { params: Promise<{ id: string }>
               </div>
             )}
 
-            {activeTab === "combat" && (
-              <CombatPanel
-                armorClass={player.armorClass}
-                speed={player.speed}
-                onSave={(ac, spd) => updateCombatStats(ac, spd)}
-              />
+{activeTab === "combat" && (
+<CombatPanel
+  armorClass={player.armorClass}
+  speed={player.speed}
+  stats={{
+    constitution: player.stats.constitution,
+    dexterity: player.stats.dexterity,
+    wisdom: player.stats.wisdom,
+  }}
+  playerLevel={1}
+  onSave={(ac, spd) => updateCombatStats(ac, spd)}
+  onSaveResistances={() => {}}
+/>
             )}
 
             {activeTab === "abilities" && (
