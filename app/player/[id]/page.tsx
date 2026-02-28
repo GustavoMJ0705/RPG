@@ -6,6 +6,7 @@ import { Eye, Loader2, AlertTriangle, Swords, Shield, Heart, Brain, BookOpen, Sp
 import { usePlayerRealtime } from "@/hooks/use-player-realtime"
 import { HpBar } from "@/components/hp-bar"
 import { AbilitiesPanel } from "@/components/abilities-panel"
+import { SkillsPanel } from "@/components/skills-panel"
 import type { LogEntry } from "@/lib/types"
 
 function StatBlock({ label, value, icon, color, glowClass }: {
@@ -201,7 +202,7 @@ function PlayerLog({ logs, onClearLogs }: { logs: LogEntry[]; onClearLogs?: () =
 export default function PlayerPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params)
   const playerId = parseInt(id, 10)
-  const { player, logs, loading, notFound, updateHp, updateAbilities, updateInventory, updateCombatStats, clearLocalLogs } = usePlayerRealtime(playerId)
+  const { player, logs, loading, notFound, updateHp, updateAbilities, updateInventory, updateCombatStats, updateSkills, clearLocalLogs } = usePlayerRealtime(playerId)
   const [activeTab, setActiveTab] = useState<"stats" | "combat" | "abilities">("stats")
 
   if (loading) {
@@ -300,7 +301,7 @@ export default function PlayerPage({ params }: { params: Promise<{ id: string }>
         {/* Main Content */}
         <main className="p-4 lg:p-6 flex flex-col lg:flex-row gap-4 lg:gap-6 lg:flex-1 lg:min-h-0 lg:overflow-hidden">
           {/* Left: HP + Tabs (Stats/Abilities) + Inventory */}
-          <div className="lg:w-[400px] shrink-0 flex flex-col gap-4 lg:overflow-y-auto scrollbar-thin">
+          <div className="lg:w-[380px] shrink-0 flex flex-col gap-4 lg:overflow-y-auto scrollbar-thin">
             {/* HP Bar - editable */}
             <HpBar
               currentHp={player.currentHp}
@@ -442,9 +443,18 @@ export default function PlayerPage({ params }: { params: Promise<{ id: string }>
             </Link>
           </div>
 
-          {/* Right: Scenario Feed */}
+          {/* Center: Scenario Feed */}
           <div className="min-h-[400px] lg:min-h-0 flex-1 overflow-hidden">
             <PlayerLog logs={logs} onClearLogs={clearLocalLogs} />
+          </div>
+
+          {/* Right: Skills Panel */}
+          <div className="lg:w-[420px] shrink-0 min-h-[400px] lg:min-h-0 lg:max-h-full overflow-hidden">
+            <SkillsPanel
+              skills={player.skills}
+              stats={player.stats}
+              onUpdate={(skills) => updateSkills(skills)}
+            />
           </div>
         </main>
       </div>

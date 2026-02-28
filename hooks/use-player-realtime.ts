@@ -184,6 +184,17 @@ export function usePlayerRealtime(playerId: number) {
     [playerId]
   )
 
+  const updateSkills = useCallback(
+    async (skills: import("@/lib/types").Skill[]) => {
+      const supabase = supabaseRef.current
+      await supabase
+        .from("players")
+        .update({ skills: skills as unknown as string[], updated_at: new Date().toISOString() })
+        .eq("id", playerId)
+    },
+    [playerId]
+  )
+
   // Clear feed locally (does not delete from DB)
   const clearLocalLogs = useCallback(() => {
     setLogs([])
@@ -242,5 +253,5 @@ export function usePlayerRealtime(playerId: number) {
     [player, playerId]
   )
 
-  return { player, logs, shopItems, loading, notFound, updateHp, updateAbilities, updateInventory, updateCombatStats, clearLocalLogs, buyShopItem }
+  return { player, logs, shopItems, loading, notFound, updateHp, updateAbilities, updateInventory, updateCombatStats, updateSkills, clearLocalLogs, buyShopItem }
 }
