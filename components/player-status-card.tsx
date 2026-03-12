@@ -182,18 +182,17 @@ export function PlayerStatusCard({ player, onUpdateStat, onUpdateHp, onUpdateAbi
       </div>
 
       {showAbilities && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-background/60 backdrop-blur-sm">
-          <div className="w-full max-w-sm mx-4 animate-float-in relative">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-background/60 backdrop-blur-sm p-4">
+          <div className="w-full max-w-2xl max-h-[85vh] overflow-y-auto animate-float-in relative scrollbar-thin">
             <button
               onClick={() => setShowAbilities(false)}
-              className="absolute -top-2 -right-2 z-10 p-1.5 rounded-full glass-panel border border-glass-border hover:bg-secondary transition-colors cursor-pointer"
+              className="absolute top-2 right-2 z-10 p-2 rounded-full glass-panel border border-glass-border hover:bg-secondary transition-colors cursor-pointer"
             >
-              <X className="h-3.5 w-3.5 text-muted-foreground" />
+              <X className="h-4 w-4 text-muted-foreground" />
             </button>
             <AbilitiesPanel
               abilities={player.abilities}
               onUpdate={(abs) => onUpdateAbilities?.(player.id, abs)}
-              compact
             />
           </div>
         </div>
